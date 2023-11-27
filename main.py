@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation, FFMpegWriter
-from matplotlib.widgets import Button
 import pandas as pd
 
 df = pd.read_excel(r"D:\Coding\Python\data.xlsx")
@@ -15,6 +14,7 @@ fig.subplots_adjust(left=0.07)
 
 paused_box = plt.Rectangle((0.45, 0.45), 0.1, 0.1, linewidth=3, edgecolor='black', facecolor='white')
 ax.add_patch(paused_box)
+
 
 def update(i):
     global paused, current_frame
@@ -39,16 +39,26 @@ def update(i):
 
         ax.legend(loc='upper left', bbox_to_anchor=(1, 1))
 
+        # Set y-axis range
+        ax.set_ylim(26, 29)
+
         tanggal = df.iloc[i, 3].strftime('%Y-%m-%d')
         ax.text(0.852, 1.012, f'Tanggal: {tanggal}', transform=ax.transAxes)
 
+        # Check if any y-values are outside the desired range
+        y_values = y_display1 + y_display2
+        min_y, max_y = min(y_values), max(y_values)
+        if min_y < 26 or max_y > 29:
+            ax.set_ylim(min(min_y, 26), max(max_y, 29))
+
     elif paused:
         paused_box.set_visible(True)
-        ax.text(0.5, 0.5, 'Paused', transform=ax.transAxes, ha='center', va='center', fontsize=15, color='red')
+        ax.text(0.5, 0.5, 'Paused', transform=ax.transAxes, ha='center', va='center', fontsize=15, color='black')
         animation.event_source.stop()
 
     else:
         animation.event_source.stop()
+
 
 def start_animation(event):
     global paused
@@ -56,10 +66,12 @@ def start_animation(event):
         paused = False
         animation.event_source.start()
 
+
 def pause_animation(event):
     global paused
     paused = True
     animation.event_source.stop()
+
 
 def toggle_recording(event):
     global recording
@@ -67,6 +79,7 @@ def toggle_recording(event):
     if recording:
         writer = FFMpegWriter(fps=10, metadata=dict(artist='Me'), bitrate=1800)
         animation.save('data.mp4', writer=writer)
+
 
 recording = False
 
